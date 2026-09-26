@@ -191,3 +191,19 @@ export default {
 /** Re-export the shared client so consumers can unit-test / reuse it. */
 export { DEFAULT_MAX_RESULTS, resolveConfig, searchSearxng }
 export type { SearxngConfig, SearxngPluginOptions, SearxngResult }
+
+/**
+ * Named exports of the internal building blocks so the dual-mode entrypoint can
+ * be unit-tested and reused without reaching into the default export.
+ */
+export {
+  PROVIDER_ID,
+  toOptions,
+  runSearch,
+  toWebSearchResult,
+  fetchText,
+  WEB_FETCH_DESCRIPTION,
+  WEB_FETCH_INPUT_SCHEMA,
+  v2,
+  server,
+}

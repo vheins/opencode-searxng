@@ -300,7 +300,18 @@ export async function searchSearxng(options: SearxngSearchOptions): Promise<Sear
     )
   }
 
-  const raw = await response.text()
+  let raw: string
+  try {
+    raw = await response.text()
+  } catch (error) {
+    if (isAbortError(error)) throw error
+    throw new SearxngError(
+      `Failed to read the SearXNG response body (HTTP ${response.status}): ${errorMessage(error)}. ` +
+        `The connection may have dropped mid-response.`,
+      { code: "NETWORK", status: response.status, cause: error },
+    )
+  }
+
   let payload: unknown
   try {
     payload = JSON.parse(raw)

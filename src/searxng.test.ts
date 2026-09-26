@@ -237,6 +237,35 @@ test("network failure is wrapped in a NETWORK SearxngError", async () => {
   )
 })
 
+test("a body read that fails mid-stream is wrapped in a NETWORK SearxngError", async () => {
+  // Simulate a socket drop after headers arrive: fetch resolves, .text() rejects.
+  const brokenResponse = {
+    ok: true,
+    status: 200,
+    statusText: "OK",
+    text: async () => {
+      throw new TypeError("terminated")
+    },
+  } as unknown as Response
+
+  await assert.rejects(
+    () =>
+      searchSearxng({
+        baseUrl: "http://localhost:8080",
+        query: "q",
+        fetchImpl: async () => brokenResponse,
+      }),
+    (error: unknown) => {
+      assert.ok(error instanceof SearxngError)
+      assert.equal(error.code, "NETWORK")
+      assert.equal(error.status, 200)
+      assert.match(error.message, /response body/)
+      assert.ok((error as { cause?: unknown }).cause instanceof TypeError)
+      return true
+    },
+  )
+})
+
 test("AbortError is rethrown untouched", async () => {
   const abort = Object.assign(new Error("aborted"), { name: "AbortError" })
   await assert.rejects(
